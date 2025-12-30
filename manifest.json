@@ -2,7 +2,7 @@
   "name": "Hub Recreio Motos",
   "short_name": "Honda Hub",
   "description": "Sistema Integrado de Gestão - Recreio Motos",
-  "start_url": "Hub de Sistemas.html",
+  "start_url": "Hub_de_Sistemas.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#dc2626",
@@ -13,4 +13,5 @@
       "type": "image/png"
     }
   ]
+
 }
