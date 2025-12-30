@@ -1,7 +1,7 @@
 const CACHE_NAME = 'honda-hub-v1';
 const ASSETS = [
   './',
-  './Hub de Sistemas.html',
+  './Hub_de_Sistemas.html',
   './manifest.json'
 ];
 
@@ -17,4 +17,5 @@ self.addEventListener('fetch', (e) => {
   e.respondWith(
     fetch(e.request).catch(() => caches.match(e.request))
   );
+
 });
