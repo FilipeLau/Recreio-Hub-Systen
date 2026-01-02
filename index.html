@@ -1,21 +1,17 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#dc2626">
-
-<script>
-    const ADMIN_PASSWORD = "Recreio@01";
-    
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
-      .then(() => console.log('PWA: Service Worker Registado'));
-  }
-</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema Integrado Honda - Recreio Motos</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#dc2626">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <style>
+        /* --- ESTILOS GERAIS --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
@@ -28,9 +24,7 @@
 
         /* Fundo Decorativo */
         body::before {
-            content: '';
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-image: 
                 radial-gradient(circle at 20% 50%, rgba(220, 38, 38, 0.08) 0%, transparent 50%),
                 radial-gradient(circle at 80% 20%, rgba(239, 68, 68, 0.06) 0%, transparent 50%);
@@ -51,21 +45,16 @@
 
         /* Navbar */
         .navbar {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(220, 38, 38, 0.15);
-            padding: 15px 40px;
-            position: sticky; top: 0; z-index: 1000;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(220, 38, 38, 0.15); padding: 15px 40px;
+            position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
         }
         .navbar-content {
-            max-width: 1400px; margin: 0 auto;
-            display: flex; align-items: center; justify-content: space-between;
+            max-width: 1400px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between;
         }
         .logo-section { display: flex; align-items: center; gap: 15px; }
         .logo-icon {
-            width: 45px; height: 45px;
-            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            width: 45px; height: 45px; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
             border-radius: 12px; display: flex; align-items: center; justify-content: center;
         }
         .logo-icon img { width: 120%; border-radius: 50%; }
@@ -77,15 +66,12 @@
         .brand-text p { color: rgba(31, 41, 55, 0.7); font-size: 0.8em; }
 
         .nav-buttons { display: flex; gap: 10px; align-items: center; }
-        
         button { cursor: pointer; border: none; font-family: inherit; }
 
         .action-btn {
             padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 13px;
             transition: all 0.2s; display: flex; align-items: center; gap: 6px;
         }
-        
-        /* Botões de Backup */
         .backup-btn { background: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb; }
         .backup-btn:hover { background: #e5e7eb; color: #1f2937; }
 
@@ -130,7 +116,7 @@
         .card-title { font-size: 1.3em; font-weight: 700; color: #1f2937; margin-bottom: 8px; }
         .card-description { font-size: 0.9em; color: #6b7280; line-height: 1.5; }
 
-        /* Fullscreen Mode (Solução CSS) */
+        /* Fullscreen Mode */
         .fullscreen-mode {
             position: fixed !important; top: 0; left: 0;
             width: 100vw !important; height: 100vh !important;
@@ -192,6 +178,10 @@
         }
         .btn-submit:disabled { background: #e5e7eb; cursor: not-allowed; }
 
+        .btn-secondary { background: #f3f4f6; color: #374151; padding: 10px 20px; border-radius: 8px; font-weight: 600; }
+        .btn-primary { background: #dc2626; color: white; padding: 10px 20px; border-radius: 8px; font-weight: 600; }
+        .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
         .notification {
             position: fixed; bottom: 30px; right: 30px; padding: 15px 25px;
             background: #10b981; color: white; border-radius: 10px;
@@ -199,99 +189,11 @@
             transform: translateY(100px); transition: 0.3s; z-index: 3000;
         }
         .notification.show { transform: translateY(0); }
+        .notification.error { background: #dc2626; }
+        .notification.info { background: #2563eb; }
     </style>
 </head>
 <body>
-  <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, doc, setDoc, getDocs, collection, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyB3Lq5nnCV-2caEhIXqny_S3wjX3DIh-5Q",
-    authDomain: "hub-recreio.firebaseapp.com",
-    projectId: "hub-recreio",
-    storageBucket: "hub-recreio.firebasestorage.app",
-    messagingSenderId: "633796172054",
-    appId: "1:633796172054:web:545d2282cfdb9cc7315837"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  // --- FUNÇÕES DO FIREBASE ---
-  window.uploadAllToCloud = async function(systemsArray) {
-    const batch = writeBatch(db);
-    systemsArray.forEach((sys) => {
-      const docRef = doc(db, "sistemas", sys.id);
-      batch.set(docRef, sys);
-    });
-    await batch.commit();
-  };
-
-  window.downloadAllFromCloud = async function() {
-    const querySnapshot = await getDocs(collection(db, "sistemas"));
-    return querySnapshot.docs.map(doc => doc.data());
-  };
-
-  // --- FUNÇÕES DE INTERFACE (VINCULADAS AO WINDOW) ---
-
-  window.syncUpload = function() {
-    document.getElementById('passwordModal').style.display = 'block';
-    document.getElementById('adminPasswordInput').value = '';
-    document.getElementById('adminPasswordInput').focus();
-    document.getElementById('adminPasswordInput').onkeypress = function(e) {
-      if (e.key === 'Enter') { confirmAndUpload(); }
-    };
-  };
-
-  window.closePasswordModal = function() {
-    document.getElementById('passwordModal').style.display = 'none';
-  };
-
-  window.confirmAndUpload = async function() {
-    const input = document.getElementById('adminPasswordInput').value;
-    if (input === ADMIN_PASSWORD) {
-      window.closePasswordModal();
-      if(!confirm("Deseja substituir o banco na nuvem com os dados desta máquina?")) return;
-      
-      showNotify("Lendo banco local...", "info");
-      try {
-        const localData = await getAllSystems(); 
-        if(localData.length === 0) {
-          showNotify("Não há sistemas locais para enviar.", "error");
-          return;
-        }
-        showNotify("Enviando para nuvem...", "info");
-        await window.uploadAllToCloud(localData);
-        showNotify("✓ Nuvem atualizada com sucesso!");
-      } catch(e) {
-        showNotify("Erro ao atualizar nuvem", "error");
-      }
-    } else {
-      alert("Senha incorreta!");
-    }
-  };
-
-  window.syncDownload = async function() {
-    if(!confirm("Deseja baixar os sistemas da nuvem? Isso substituirá seus sistemas locais.")) return;
-    showNotify("Conectando à nuvem...", "info");
-    try {
-      const cloudData = await window.downloadAllFromCloud();
-      if (cloudData && cloudData.length > 0) {
-        showNotify("Restaurando banco local...", "info");
-        for(let sys of cloudData) {
-          await saveSystemToDB(sys);
-        }
-        renderSystems();
-        showNotify("✓ Sistemas restaurados com sucesso!");
-      } else {
-        showNotify("Nenhum sistema encontrado na nuvem.", "error");
-      }
-    } catch(e) {
-      showNotify("Erro ao sincronizar dados", "error");
-    }
-  };
-</script>
     <div class="floating-shapes"><div class="shape"></div><div class="shape"></div></div>
 
     <nav class="navbar">
@@ -303,8 +205,9 @@
             <div class="nav-buttons">
                 <button class="action-btn backup-btn" onclick="syncDownload()" title="Baixar da Nuvem">☁️⬇️ Restaurar Nuvem</button>
                 <button class="action-btn backup-btn" onclick="syncUpload()" title="Atualizar Nuvem">☁️⬆️ Backup Nuvem</button>
-                <button class="action-btn backup-btn" onclick="exportData()">⬇ Backup</button>
-                <button class="action-btn backup-btn" onclick="document.getElementById('importFile').click()">⬆ Restaurar</button>
+                
+                <button class="action-btn backup-btn" onclick="exportData()">⬇ Backup Local</button>
+                <button class="action-btn backup-btn" onclick="document.getElementById('importFile').click()">⬆ Restaurar Local</button>
                 <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)">
                 
                 <button class="add-system-btn" id="addSystemBtn">+ Adicionar Sistema</button>
@@ -367,51 +270,184 @@
             </form>
         </div>
     </div>
+
     <div id="passwordModal" class="modal">
-    <div class="modal-content" style="max-width: 400px; margin: 10% auto;">
-        <div class="modal-header">
-            <h2 class="modal-title" style="font-size: 1.5em;">🔐 Confirmar Backup</h2>
-            <button class="close-modal" onclick="closePasswordModal()">&times;</button>
+        <div class="modal-content" style="max-width: 400px; margin: 10% auto;">
+            <div class="modal-header">
+                <h2 class="modal-title" style="font-size: 1.5em;">🔐 Confirmar Backup</h2>
+                <button class="close-modal" onclick="closePasswordModal()">&times;</button>
+            </div>
+            <div class="form-group" style="margin-top: 20px;">
+                <label>Senha do Administrador</label>
+                <input type="password" id="adminPasswordInput" placeholder="Digite a senha..." class="form-control">
+            </div>
+            <div class="form-actions">
+                <button class="btn-secondary" onclick="closePasswordModal()">Cancelar</button>
+                <button class="btn-primary" onclick="confirmAndUpload()">Confirmar</button>
+            </div>
         </div>
-        <div class="form-group" style="margin-top: 20px;">
-            <label>Senha do Administrador</label>
-            <input type="password" id="adminPasswordInput" placeholder="Digite a senha..." style="width: 100%; padding: 12px; border: 2px solid rgba(220, 38, 38, 0.2); border-radius: 10px;">
-        </div>
-        <div class="form-actions">
-            <button class="btn-secondary" onclick="closePasswordModal()">Cancelar</button>
-            <button class="btn-primary" onclick="confirmAndUpload()">Confirmar</button>
-        </div>
-    </div>
     </div>
 
     <div id="notification" class="notification"></div>
 
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDocs, collection, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // SUAS CREDENCIAIS
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3Lq5nnCV-2caEhIXqny_S3wjX3DIh-5Q",
+            authDomain: "hub-recreio.firebaseapp.com",
+            projectId: "hub-recreio",
+            storageBucket: "hub-recreio.firebasestorage.app",
+            messagingSenderId: "633796172054",
+            appId: "1:633796172054:web:545d2282cfdb9cc7315837"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- EXPORTANDO FUNÇÕES PARA O ESCOPO GLOBAL (WINDOW) ---
+        
+        // Função 1: Enviar lista completa para a nuvem
+        window.uploadAllToCloud = async function(systemsArray) {
+            const batch = writeBatch(db);
+            systemsArray.forEach((sys) => {
+                const docRef = doc(db, "sistemas", sys.id);
+                batch.set(docRef, sys);
+            });
+            await batch.commit();
+        };
+
+        // Função 2: Baixar tudo da nuvem
+        window.downloadAllFromCloud = async function() {
+            const querySnapshot = await getDocs(collection(db, "sistemas"));
+            return querySnapshot.docs.map(doc => doc.data());
+        };
+
+        // Função 3: Salvar um único sistema (usado ao adicionar)
+        window.saveToCloud = async function(system) {
+            await setDoc(doc(db, "sistemas", system.id), system);
+        };
+
+        console.log("Firebase Module Carregado e Vinculado ao Window");
+    </script>
+
     <script>
-        // --- CONFIGURAÇÃO DO BANCO DE DADOS (INDEXED DB) ---
-        // Isso permite salvar arquivos grandes (> 5MB) de forma persistente
+        // --- CONSTANTES E CONFIGURAÇÕES ---
+        const ADMIN_PASSWORD = "Recreio@01";
         const DB_NAME = 'HondaHubDB';
         const DB_VERSION = 1;
         const STORE_NAME = 'systems';
         let db;
 
-        // Inicializa o Banco
+        // Registro do PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(() => console.log('PWA: Service Worker Registado'));
+        }
+
+        // --- FUNÇÕES DE SINCRONIZAÇÃO (NUVEM) ---
+
+        // 1. Iniciar Upload (Pede Senha)
+        function syncUpload() {
+            document.getElementById('passwordModal').style.display = 'block';
+            document.getElementById('adminPasswordInput').value = '';
+            document.getElementById('adminPasswordInput').focus();
+            
+            // Permite apertar Enter para confirmar
+            document.getElementById('adminPasswordInput').onkeypress = function(e) {
+                if (e.key === 'Enter') confirmAndUpload();
+            };
+        }
+
+        function closePasswordModal() {
+            document.getElementById('passwordModal').style.display = 'none';
+        }
+
+        // 2. Confirmar Senha e Enviar
+        async function confirmAndUpload() {
+            const input = document.getElementById('adminPasswordInput').value;
+            
+            if (input === ADMIN_PASSWORD) {
+                closePasswordModal();
+                if(!confirm("Deseja substituir o banco na nuvem com os dados desta máquina?")) return;
+                
+                showNotify("Lendo banco local...", "info");
+                try {
+                    // Busca dados locais usando a função do IndexedDB
+                    const localData = await getAllSystems(); 
+                    
+                    if(localData.length === 0) {
+                        showNotify("Não há sistemas locais para enviar.", "error");
+                        return;
+                    }
+
+                    showNotify("Enviando para nuvem...", "info");
+                    
+                    // Chama a função exportada pelo módulo do Firebase
+                    if(window.uploadAllToCloud) {
+                        await window.uploadAllToCloud(localData);
+                        showNotify("✓ Nuvem atualizada com sucesso!");
+                    } else {
+                        showNotify("Erro: Módulo Firebase não carregou.", "error");
+                    }
+                } catch(e) {
+                    showNotify("Erro ao atualizar nuvem", "error");
+                    console.error(e);
+                }
+            } else {
+                alert("Senha incorreta!");
+            }
+        }
+
+        // 3. Baixar da Nuvem (Sem senha)
+        async function syncDownload() {
+            if(!confirm("Deseja baixar os sistemas da nuvem? Isso substituirá seus sistemas locais.")) return;
+            
+            showNotify("Conectando à nuvem...", "info");
+            try {
+                if(window.downloadAllFromCloud) {
+                    const cloudData = await window.downloadAllFromCloud();
+                    
+                    if (cloudData && cloudData.length > 0) {
+                        showNotify("Restaurando banco local...", "info");
+                        
+                        // Salva cada sistema baixado no IndexedDB local
+                        for(let sys of cloudData) {
+                            await saveSystemToDB(sys);
+                        }
+                        
+                        renderSystems();
+                        showNotify("✓ Sistemas restaurados com sucesso!");
+                    } else {
+                        showNotify("Nenhum sistema encontrado na nuvem.", "error");
+                    }
+                } else {
+                    showNotify("Erro: Módulo Firebase não carregou.", "error");
+                }
+            } catch(e) {
+                showNotify("Erro ao sincronizar dados", "error");
+                console.error(e);
+            }
+        }
+
+        // --- FUNÇÕES DE BANCO DE DADOS LOCAL (INDEXEDDB) ---
+
         function initDB() {
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open(DB_NAME, DB_VERSION);
-                
                 request.onerror = (event) => {
                     console.error("Erro no DB:", event.target.error);
                     showNotify("Erro ao acessar armazenamento.", "error");
                     reject(event.target.error);
                 };
-
                 request.onupgradeneeded = (event) => {
                     const db = event.target.result;
                     if (!db.objectStoreNames.contains(STORE_NAME)) {
                         db.createObjectStore(STORE_NAME, { keyPath: "id" });
                     }
                 };
-
                 request.onsuccess = (event) => {
                     db = event.target.result;
                     resolve(db);
@@ -419,7 +455,6 @@
             });
         }
 
-        // Funções de CRUD do Banco
         async function saveSystemToDB(system) {
             return new Promise((resolve, reject) => {
                 const transaction = db.transaction([STORE_NAME], "readwrite");
@@ -450,7 +485,7 @@
             });
         }
 
-        // --- LÓGICA DA APLICAÇÃO ---
+        // --- LÓGICA DE INTERFACE E EVENTOS ---
 
         let uploadedHtmlContent = '';
 
@@ -461,7 +496,7 @@
                 document.getElementById('homeView').style.display = 'block';
                 renderSystems();
             } catch (e) {
-                document.getElementById('loading').innerText = "Erro ao carregar banco de dados. Tente atualizar a página.";
+                document.getElementById('loading').innerText = "Erro ao carregar banco de dados.";
             }
             initEvents();
         });
@@ -509,15 +544,23 @@
             };
 
             try {
+                // 1. Salva Local
                 await saveSystemToDB(newSystem);
+                
+                // 2. Tenta Salvar na Nuvem (se disponível)
+                if(window.saveToCloud) {
+                    window.saveToCloud(newSystem).catch(e => console.log("Salvo apenas local (offline)"));
+                }
+                
                 showNotify("Sistema salvo com sucesso!");
                 closeModal();
                 renderSystems();
             } catch (err) {
                 console.error(err);
-                showNotify("Erro ao salvar. O arquivo pode ser muito grande.", "error");
+                showNotify("Erro ao salvar.", "error");
             } finally {
                 submitBtn.innerHTML = "Salvar Sistema no Banco";
+                submitBtn.disabled = false;
             }
         }
 
@@ -529,7 +572,7 @@
             }
         }
 
-        // --- SISTEMA DE TELA CHEIA ATUALIZADO ---
+        // Tela Cheia Customizada
         function toggleCustomFullscreen() {
             const container = document.getElementById('system-container-wrapper');
             const btn = document.getElementById('fs-btn');
@@ -537,12 +580,10 @@
             
             if (container.classList.contains('fullscreen-mode')) {
                 btn.innerHTML = '✕ Sair';
-                btn.style.background = '#fee2e2';
-                btn.style.color = '#dc2626';
+                btn.style.background = '#fee2e2'; btn.style.color = '#dc2626';
             } else {
                 btn.innerHTML = '⛶ Tela Cheia';
-                btn.style.background = 'white';
-                btn.style.color = '#333';
+                btn.style.background = 'white'; btn.style.color = '#333';
             }
         }
 
@@ -558,7 +599,6 @@
             document.getElementById('addSystemBtn').style.display = 'none';
             document.querySelectorAll('.backup-btn').forEach(b => b.style.display = 'none');
 
-            // Cria um blob URL para o HTML
             const blob = new Blob([sys.content], { type: 'text/html' });
             const url = URL.createObjectURL(blob);
 
@@ -575,12 +615,10 @@
         }
 
         function goBack() {
-            // Verifica se está em tela cheia e sai
             const container = document.getElementById('system-container-wrapper');
             if (container && container.classList.contains('fullscreen-mode')) {
                 toggleCustomFullscreen();
             }
-
             document.getElementById('homeView').style.display = 'block';
             document.getElementById('systemView').style.display = 'none';
             document.getElementById('backBtn').style.display = 'none';
@@ -589,11 +627,10 @@
             document.getElementById('systemContent').innerHTML = '';
         }
 
-        // --- BACKUP E RESTAURAÇÃO ---
+        // Backup Local (Arquivo JSON)
         async function exportData() {
             const systems = await getAllSystems();
             if(systems.length === 0) return showNotify("Nada para exportar.");
-            
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(systems));
             const downloadAnchorNode = document.createElement('a');
             downloadAnchorNode.setAttribute("href", dataStr);
@@ -606,27 +643,22 @@
         function importData(input) {
             const file = input.files[0];
             if(!file) return;
-
             const reader = new FileReader();
             reader.onload = async (e) => {
                 try {
                     const systems = JSON.parse(e.target.result);
                     if(Array.isArray(systems)) {
-                        for(let sys of systems) {
-                            await saveSystemToDB(sys);
-                        }
+                        for(let sys of systems) await saveSystemToDB(sys);
                         showNotify("Backup restaurado com sucesso!");
                         renderSystems();
                     }
-                } catch(err) {
-                    showNotify("Arquivo de backup inválido.", "error");
-                }
+                } catch(err) { showNotify("Arquivo inválido.", "error"); }
             };
             reader.readAsText(file);
-            input.value = ''; // Reset
+            input.value = '';
         }
 
-        // --- EVENTOS DE UI ---
+        // Inicialização de Eventos
         function initEvents() {
             document.getElementById('addSystemBtn').onclick = () => {
                 document.getElementById('addSystemModal').style.display = 'block';
@@ -640,7 +672,6 @@
             document.getElementById('backBtn').onclick = goBack;
             document.getElementById('addSystemForm').onsubmit = handleAddSystem;
             
-            // Upload UI
             const uploadArea = document.getElementById('uploadArea');
             const fileInput = document.getElementById('htmlFileInput');
             uploadArea.onclick = () => fileInput.click();
@@ -657,7 +688,6 @@
                 }
             };
 
-            // Icons
             document.querySelectorAll('.icon-option').forEach(opt => {
                 opt.onclick = () => {
                     document.querySelectorAll('.icon-option').forEach(o => o.classList.remove('selected'));
@@ -667,7 +697,6 @@
                 };
             });
 
-            // Validação simples
             ['systemName', 'systemDescription'].forEach(id => {
                 document.getElementById(id).oninput = validateForm;
             });
@@ -678,12 +707,7 @@
             const desc = document.getElementById('systemDescription').value;
             const icon = document.getElementById('selectedIcon').value;
             const btn = document.getElementById('submitBtn');
-            
-            if(name && desc && icon && uploadedHtmlContent) {
-                btn.disabled = false;
-            } else {
-                btn.disabled = true;
-            }
+            btn.disabled = !(name && desc && icon && uploadedHtmlContent);
         }
 
         function closeModal() {
@@ -693,13 +717,13 @@
         function showNotify(msg, type = 'success') {
             const el = document.getElementById('notification');
             el.textContent = msg;
-            el.style.background = type === 'success' ? '#10b981' : '#dc2626';
-            el.classList.add('show');
+            el.className = `notification show ${type}`;
             setTimeout(() => el.classList.remove('show'), 3000);
         }
 
         window.onclick = (e) => {
             if (e.target == document.getElementById('addSystemModal')) closeModal();
+            if (e.target == document.getElementById('passwordModal')) closePasswordModal();
         }
     </script>
 </body>
