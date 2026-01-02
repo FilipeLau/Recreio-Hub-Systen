@@ -5,41 +5,64 @@
 <meta name="theme-color" content="#dc2626">
 
 <script>
+    const ADMIN_PASSWORD = "Recreio@01";
+    
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js')
       .then(() => console.log('PWA: Service Worker Registado'));
   }
-    // Função para baixar dados da nuvem e atualizar o banco local
-async function syncDownload() {
-    if(!confirm("Isso irá substituir seus sistemas locais pelos da nuvem. Deseja continuar?")) return;
+   // 1. Abrir o modal de senha
+function syncUpload() {
+    document.getElementById('passwordModal').style.display = 'block';
+    document.getElementById('adminPasswordInput').value = '';
+    document.getElementById('adminPasswordInput').focus();
+}
+
+// 2. Fechar o modal de senha
+function closePasswordModal() {
+    document.getElementById('passwordModal').style.display = 'none';
+}
+
+// 3. Validar senha e enviar para nuvem
+async function confirmAndUpload() {
+    const input = document.getElementById('adminPasswordInput').value;
     
-    showNotify("Baixando dados da nuvem...", "info");
-    try {
-        const cloudData = await window.downloadAllFromCloud();
+    if (input === ADMIN_PASSWORD) {
+        closePasswordModal();
+        if(!confirm("Tem certeza que deseja substituir o banco de dados na nuvem com os dados desta máquina?")) return;
         
-        // Limpar banco local e inserir os da nuvem
-        // (Aqui você pode usar um loop simples para salvar no IndexedDB)
-        for (let sys of cloudData) {
-            await saveSystemToDB(sys);
+        showNotification("Enviando dados para nuvem...", "info");
+        try {
+            // Usa a função do bloco type="module"
+            await window.uploadBatchToCloud(customSystems);
+            showNotification("✓ Nuvem atualizada com sucesso!", "success");
+        } catch(e) {
+            showNotification("Erro ao atualizar nuvem", "error");
+            console.error(e);
         }
-        
-        renderSystems();
-        showNotify("Sincronização: Nuvem -> Local concluída!");
-    } catch (e) {
-        showNotify("Erro ao baixar da nuvem", "error");
+    } else {
+        alert("Senha incorreta!");
     }
 }
-// Função para pegar o local e forçar atualização na nuvem
-async function syncUpload() {
-    if(!confirm("Isso atualizará a nuvem com os arquivos que estão neste computador. Confirmar?")) return;
 
-    showNotify("Enviando para nuvem...", "info");
+// 4. Baixar da nuvem (Sem senha, apenas confirmação)
+async function syncDownload() {
+    if(!confirm("Deseja baixar os sistemas da nuvem? Isso substituirá seus sistemas locais atuais.")) return;
+    
+    showNotification("Baixando dados...", "info");
     try {
-        const localSystems = await getAllSystems(); // Função que pega tudo do IndexedDB
-        await window.uploadAllToCloud(localSystems);
-        showNotify("Nuvem atualizada com sucesso!");
-    } catch (e) {
-        showNotify("Erro ao atualizar nuvem", "error");
+        const cloudData = await window.downloadAllFromCloud();
+        if (cloudData && cloudData.length > 0) {
+            customSystems = cloudData;
+            localStorage.setItem('customSystems', JSON.stringify(customSystems));
+            renderSystems();
+            showNotification("✓ Sistemas restaurados da nuvem!", "success");
+        } else {
+            showNotification("Nenhum sistema encontrado na nuvem.", "error");
+        }
+    } catch(e) {
+        showNotification("Erro ao baixar dados", "error");
+        console.error(e);
     }
 }
 </script>
@@ -346,6 +369,22 @@ async function syncUpload() {
                 <button type="submit" class="btn-submit" id="submitBtn" disabled>Salvar Sistema no Banco</button>
             </form>
         </div>
+    </div>
+    <div id="passwordModal" class="modal">
+    <div class="modal-content" style="max-width: 400px; margin: 10% auto;">
+        <div class="modal-header">
+            <h2 class="modal-title" style="font-size: 1.5em;">🔐 Confirmar Backup</h2>
+            <button class="close-modal" onclick="closePasswordModal()">&times;</button>
+        </div>
+        <div class="form-group" style="margin-top: 20px;">
+            <label>Senha do Administrador</label>
+            <input type="password" id="adminPasswordInput" placeholder="Digite a senha..." style="width: 100%; padding: 12px; border: 2px solid rgba(220, 38, 38, 0.2); border-radius: 10px;">
+        </div>
+        <div class="form-actions">
+            <button class="btn-secondary" onclick="closePasswordModal()">Cancelar</button>
+            <button class="btn-primary" onclick="confirmAndUpload()">Confirmar</button>
+        </div>
+    </div>
     </div>
 
     <div id="notification" class="notification"></div>
