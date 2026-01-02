@@ -11,60 +11,6 @@
     navigator.serviceWorker.register('sw.js')
       .then(() => console.log('PWA: Service Worker Registado'));
   }
-   // 1. Abrir o modal de senha
-function syncUpload() {
-    document.getElementById('passwordModal').style.display = 'block';
-    document.getElementById('adminPasswordInput').value = '';
-    document.getElementById('adminPasswordInput').focus();
-}
-
-// 2. Fechar o modal de senha
-function closePasswordModal() {
-    document.getElementById('passwordModal').style.display = 'none';
-}
-
-// 3. Validar senha e enviar para nuvem
-async function confirmAndUpload() {
-    const input = document.getElementById('adminPasswordInput').value;
-    
-    if (input === ADMIN_PASSWORD) {
-        closePasswordModal();
-        if(!confirm("Tem certeza que deseja substituir o banco de dados na nuvem com os dados desta máquina?")) return;
-        
-        showNotification("Enviando dados para nuvem...", "info");
-        try {
-            // Usa a função do bloco type="module"
-            await window.uploadBatchToCloud(customSystems);
-            showNotification("✓ Nuvem atualizada com sucesso!", "success");
-        } catch(e) {
-            showNotification("Erro ao atualizar nuvem", "error");
-            console.error(e);
-        }
-    } else {
-        alert("Senha incorreta!");
-    }
-}
-
-// 4. Baixar da nuvem (Sem senha, apenas confirmação)
-async function syncDownload() {
-    if(!confirm("Deseja baixar os sistemas da nuvem? Isso substituirá seus sistemas locais atuais.")) return;
-    
-    showNotification("Baixando dados...", "info");
-    try {
-        const cloudData = await window.downloadAllFromCloud();
-        if (cloudData && cloudData.length > 0) {
-            customSystems = cloudData;
-            localStorage.setItem('customSystems', JSON.stringify(customSystems));
-            renderSystems();
-            showNotification("✓ Sistemas restaurados da nuvem!", "success");
-        } else {
-            showNotification("Nenhum sistema encontrado na nuvem.", "error");
-        }
-    } catch(e) {
-        showNotification("Erro ao baixar dados", "error");
-        console.error(e);
-    }
-}
 </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -272,9 +218,7 @@ async function syncDownload() {
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // EXPORTANDO FUNÇÕES PARA O SISTEMA
-  
-  // Enviar múltiplos sistemas de uma vez (Update Total)
+  // --- FUNÇÕES DO FIREBASE ---
   window.uploadAllToCloud = async function(systemsArray) {
     const batch = writeBatch(db);
     systemsArray.forEach((sys) => {
@@ -284,15 +228,68 @@ async function syncDownload() {
     await batch.commit();
   };
 
-  // Baixar tudo da nuvem
   window.downloadAllFromCloud = async function() {
     const querySnapshot = await getDocs(collection(db, "sistemas"));
     return querySnapshot.docs.map(doc => doc.data());
   };
 
-  // Salvar individual (usado no cadastro)
-  window.saveToCloud = async function(system) {
-    await setDoc(doc(db, "sistemas", system.id), system);
+  // --- FUNÇÕES DE INTERFACE (VINCULADAS AO WINDOW) ---
+
+  window.syncUpload = function() {
+    document.getElementById('passwordModal').style.display = 'block';
+    document.getElementById('adminPasswordInput').value = '';
+    document.getElementById('adminPasswordInput').focus();
+    document.getElementById('adminPasswordInput').onkeypress = function(e) {
+      if (e.key === 'Enter') { confirmAndUpload(); }
+    };
+  };
+
+  window.closePasswordModal = function() {
+    document.getElementById('passwordModal').style.display = 'none';
+  };
+
+  window.confirmAndUpload = async function() {
+    const input = document.getElementById('adminPasswordInput').value;
+    if (input === ADMIN_PASSWORD) {
+      window.closePasswordModal();
+      if(!confirm("Deseja substituir o banco na nuvem com os dados desta máquina?")) return;
+      
+      showNotify("Lendo banco local...", "info");
+      try {
+        const localData = await getAllSystems(); 
+        if(localData.length === 0) {
+          showNotify("Não há sistemas locais para enviar.", "error");
+          return;
+        }
+        showNotify("Enviando para nuvem...", "info");
+        await window.uploadAllToCloud(localData);
+        showNotify("✓ Nuvem atualizada com sucesso!");
+      } catch(e) {
+        showNotify("Erro ao atualizar nuvem", "error");
+      }
+    } else {
+      alert("Senha incorreta!");
+    }
+  };
+
+  window.syncDownload = async function() {
+    if(!confirm("Deseja baixar os sistemas da nuvem? Isso substituirá seus sistemas locais.")) return;
+    showNotify("Conectando à nuvem...", "info");
+    try {
+      const cloudData = await window.downloadAllFromCloud();
+      if (cloudData && cloudData.length > 0) {
+        showNotify("Restaurando banco local...", "info");
+        for(let sys of cloudData) {
+          await saveSystemToDB(sys);
+        }
+        renderSystems();
+        showNotify("✓ Sistemas restaurados com sucesso!");
+      } else {
+        showNotify("Nenhum sistema encontrado na nuvem.", "error");
+      }
+    } catch(e) {
+      showNotify("Erro ao sincronizar dados", "error");
+    }
   };
 </script>
     <div class="floating-shapes"><div class="shape"></div><div class="shape"></div></div>
