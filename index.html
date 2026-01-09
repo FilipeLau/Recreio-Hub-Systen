@@ -16,12 +16,14 @@
     <style>
         /* --- ESTILOS VISUAIS --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 30%, #fff5f5 70%, #ffffff 100%);
-            min-height: 100vh; overflow-x: hidden;
+            min-height: 100vh; overflow-x: hidden; position: relative;
         }
-        /* Fundo */
+
+        /* Fundo Decorativo */
         body::before {
             content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-image: radial-gradient(circle at 20% 50%, rgba(220, 38, 38, 0.08) 0%, transparent 50%);
@@ -33,52 +35,85 @@
             background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(220, 38, 38, 0.15); padding: 15px 40px;
             position: sticky; top: 0; z-index: 1000; display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
         }
         .logo-section { display: flex; align-items: center; gap: 15px; }
-        .logo-icon { width: 45px; height: 45px; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); border-radius: 12px; display: flex; justify-content: center; align-items: center; }
+        .logo-icon { width: 45px; height: 45px; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); border-radius: 12px; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); }
         .logo-icon img { width: 120%; border-radius: 50%; }
-        .brand-text h1 { color: #1a1a1a; font-size: 1.4em; font-weight: 700; }
+        .brand-text h1 { color: #1a1a1a; font-size: 1.4em; font-weight: 700; background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .brand-text p { color: #666; font-size: 0.8em; }
 
-        .nav-buttons { display: flex; gap: 10px; }
+        .nav-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
         button { cursor: pointer; border: none; font-family: inherit; }
-        .action-btn { padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 13px; display: flex; gap: 6px; align-items: center; }
+        .action-btn { padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 13px; display: flex; gap: 6px; align-items: center; transition: 0.2s; }
         .backup-btn { background: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb; }
-        .backup-btn:hover { background: #e5e7eb; color: #1f2937; }
-        .add-system-btn { background: #10b981; color: white; padding: 10px 20px; border-radius: 10px; }
-        .back-btn { background: #dc2626; color: white; padding: 10px 20px; border-radius: 10px; display: none; }
+        .backup-btn:hover { background: #e5e7eb; color: #1f2937; transform: translateY(-1px); }
+        
+        .add-system-btn { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 10px 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); font-weight: 600; }
+        .add-system-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3); }
+        
+        .back-btn { background: #dc2626; color: white; padding: 10px 20px; border-radius: 10px; display: none; font-weight: 600; }
+        .back-btn:hover { background: #b91c1c; transform: translateY(-2px); }
 
-        /* Grid e Cards */
+        /* Layout Principal */
         .main-content { max-width: 1400px; margin: 40px auto; padding: 0 40px; }
-        .systems-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
-        .system-card { background: white; border: 1px solid rgba(220, 38, 38, 0.1); border-radius: 20px; padding: 30px; transition: 0.3s; cursor: pointer; }
-        .system-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .systems-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; }
+        
+        /* Cartões */
+        .system-card { background: white; border: 1px solid rgba(220, 38, 38, 0.1); border-radius: 20px; padding: 30px; transition: 0.3s; cursor: pointer; position: relative; overflow: hidden; }
+        .system-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(220, 38, 38, 0.1); border-color: rgba(220, 38, 38, 0.3); }
         .card-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
-        .card-icon { font-size: 40px; }
-        .delete-btn { background: #fee2e2; color: #dc2626; padding: 5px 10px; border-radius: 6px; font-weight: bold; }
+        .card-icon { font-size: 40px; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.1)); }
+        .delete-btn { background: #fee2e2; color: #dc2626; padding: 6px 12px; border-radius: 8px; font-weight: bold; font-size: 11px; opacity: 0; transition: 0.2s; }
+        .system-card:hover .delete-btn { opacity: 1; }
+        .card-title { font-size: 1.3em; font-weight: 700; color: #1f2937; margin-bottom: 8px; }
+
+        /* Badge Online */
+        .badge-online { position: absolute; top: 20px; right: 20px; background: #e0f2fe; color: #0284c7; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; display: flex; align-items: center; gap: 4px; border: 1px solid #bae6fd; }
 
         /* Fullscreen */
         .fullscreen-mode { position: fixed !important; top: 0; left: 0; width: 100vw !important; height: 100vh !important; z-index: 5000; background: #f8f9fa; padding: 0 !important; margin: 0 !important; }
-        .fullscreen-mode #sys-iframe { height: 100% !important; border: none !important; }
-        .fullscreen-mode .system-header-controls { position: absolute; top: 10px; right: 20px; z-index: 5001; background: rgba(255,255,255,0.9); padding: 8px; border-radius: 12px; }
+        .fullscreen-mode #sys-iframe { height: 100% !important; border: none !important; border-radius: 0 !important; }
+        .fullscreen-mode .system-header-controls { position: absolute; top: 10px; right: 20px; z-index: 5001; background: rgba(255,255,255,0.95); padding: 8px 16px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.1); }
 
         /* Modais */
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
-        .modal-content { background: white; margin: 5vh auto; padding: 30px; border-radius: 20px; width: 90%; max-width: 600px; }
-        .form-control { width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; }
-        .upload-area { border: 2px dashed #e5e7eb; padding: 30px; text-align: center; border-radius: 12px; cursor: pointer; }
-        .upload-area.has-file { border-color: #10b981; background: #ecfdf5; }
-        
-        .icon-selector { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
-        .icon-option { width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; border: 2px solid #eee; border-radius: 8px; cursor: pointer; font-size: 20px; }
-        .icon-option.selected { border-color: #dc2626; background: #fff5f5; }
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); animation: fadeIn 0.2s ease; }
+        .modal-content { background: white; margin: 5vh auto; padding: 35px; border-radius: 24px; width: 90%; max-width: 650px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); max-height: 90vh; overflow-y: auto; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .btn-primary { background: #dc2626; color: white; padding: 10px 20px; border-radius: 8px; }
-        .btn-secondary { background: #f3f4f6; color: #333; padding: 10px 20px; border-radius: 8px; }
-        .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        /* Formulario */
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-control { width: 100%; padding: 14px; border: 2px solid #e5e7eb; border-radius: 12px; font-family: inherit; transition: 0.3s; font-size: 15px; }
+        .form-control:focus { border-color: #dc2626; outline: none; }
+
+        /* Seletor de Tipo (Arquivo/Link) */
+        .type-selector { display: flex; gap: 10px; margin-bottom: 25px; background: #f3f4f6; padding: 5px; border-radius: 12px; }
+        .type-option { flex: 1; text-align: center; padding: 12px; cursor: pointer; border-radius: 10px; font-weight: 600; color: #6b7280; transition: 0.3s; }
+        .type-option.active { background: white; color: #dc2626; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+
+        /* Ícones */
+        .icon-selector { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; }
+        .icon-option { width: 48px; height: 48px; display: flex; justify-content: center; align-items: center; border: 2px solid #f3f4f6; border-radius: 12px; cursor: pointer; font-size: 24px; transition: 0.2s; background: white; }
+        .icon-option:hover { transform: scale(1.1); border-color: #fee2e2; }
+        .icon-option.selected { border-color: #dc2626; background: #fef2f2; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15); }
+
+        /* Upload */
+        .upload-area { border: 2px dashed #e5e7eb; padding: 30px; text-align: center; border-radius: 16px; cursor: pointer; transition: 0.3s; background: #f9fafb; }
+        .upload-area:hover { border-color: #dc2626; background: #fef2f2; }
+        .upload-area.has-file { border-color: #10b981; background: #ecfdf5; }
+        .url-input-container { display: none; }
+
+        /* Botões */
+        .form-actions { display: flex; gap: 12px; margin-top: 30px; }
+        .btn-primary { flex: 1; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: white; padding: 14px; border-radius: 12px; font-weight: 600; transition: 0.2s; }
+        .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(220, 38, 38, 0.2); }
+        .btn-primary:disabled { background: #e5e7eb; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-secondary { flex: 1; background: #f3f4f6; color: #374151; padding: 14px; border-radius: 12px; font-weight: 600; }
+        .btn-secondary:hover { background: #e5e7eb; }
 
         /* Notificação */
-        .notification { position: fixed; bottom: 30px; right: 30px; padding: 15px 25px; background: #10b981; color: white; border-radius: 10px; transform: translateY(150px); transition: 0.3s; z-index: 6000; }
+        .notification { position: fixed; bottom: 30px; right: 30px; padding: 16px 24px; background: #10b981; color: white; border-radius: 12px; transform: translateY(150px); transition: 0.3s; z-index: 6000; font-weight: 500; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .notification.show { transform: translateY(0); }
         .notification.error { background: #dc2626; }
         .notification.info { background: #2563eb; }
@@ -104,7 +139,7 @@
     </nav>
 
     <main class="main-content">
-        <div id="loading" style="text-align:center; padding: 50px; color: #666;">Carregando sistemas...</div>
+        <div id="loading" style="text-align:center; padding: 50px; color: #666;">Carregando biblioteca...</div>
         
         <div class="home-view" id="homeView" style="display:none">
             <div class="systems-grid" id="systemsGrid"></div>
@@ -117,55 +152,81 @@
 
     <div id="addSystemModal" class="modal">
         <div class="modal-content">
-            <h2 style="margin-bottom: 20px;">Novo Sistema</h2>
+            <h2 style="margin-bottom: 20px; text-align: center; color: #1a1a1a;">Novo Sistema</h2>
+            
             <form id="addSystemForm">
-                <input type="text" class="form-control" id="systemName" required placeholder="Nome do Sistema">
-                <textarea class="form-control" id="systemDescription" required placeholder="Descrição"></textarea>
-                
-                <div class="icon-selector" id="iconSelector">
-                    <div class="icon-option" data-icon="📊" title="Relatórios">📊</div>
-                    <div class="icon-option" data-icon="📈" title="Vendas">📈</div>
-                    <div class="icon-option" data-icon="📋" title="Checklist">📋</div>
-                    <div class="icon-option" data-icon="🏍️" title="Motos">🏍️</div>
-                    <div class="icon-option" data-icon="🔧" title="Oficina">🔧</div>
-                    <div class="icon-option" data-icon="⚙️" title="Peças">⚙️</div>
-                    <div class="icon-option" data-icon="🛞" title="Pneus">🛞</div>
-                    <div class="icon-option" data-icon="💰" title="Financeiro">💰</div>
-                    <div class="icon-option" data-icon="💳" title="Pagamentos">💳</div>
-                    <div class="icon-option" data-icon="🏦" title="Banco/Financiamento">🏦</div>
-                    <div class="icon-option" data-icon="🛡️" title="Seguros">🛡️</div>
-                    <div class="icon-option" data-icon="📦" title="Estoque">📦</div>
-                    <div class="icon-option" data-icon="🚚" title="Entrega">🚚</div>
-                    <div class="icon-option" data-icon="📍" title="Rastreamento">📍</div>
-                    <div class="icon-option" data-icon="🏭" title="Fábrica/Pedido">🏭</div>
-                    <div class="icon-option" data-icon="👥" title="Clientes">👥</div>
-                    <div class="icon-option" data-icon="🤝" title="Vendas/Parcerias">🤝</div>
-                    <div class="icon-option" data-icon="📅" title="Agendamento">📅</div>
-                    <div class="icon-option" data-icon="📝" title="Contratos">📝</div>
-                    <div class="icon-option" data-icon="📞" title="Contato/CRM">📞</div>
-                    <div class="icon-option" data-icon="🏢" title="Filial">🏢</div>
-                    <div class="icon-option" data-icon="☁️" title="Sistema">☁️</div>
+                <div class="type-selector">
+                    <div class="type-option active" onclick="switchType('file')" id="typeFileBtn">📂 Arquivo Local</div>
+                    <div class="type-option" onclick="switchType('link')" id="typeLinkBtn">🌐 Link Online</div>
                 </div>
-                <input type="hidden" id="selectedIcon">
+                <input type="hidden" id="systemType" value="file">
 
-                <div class="upload-area" id="uploadArea">
-                    <p>📄 Clique para selecionar o arquivo HTML</p>
-                    <input type="file" id="htmlFileInput" accept=".html" style="display: none;" required>
+                <div class="form-group">
+                    <label>Nome do Sistema</label>
+                    <input type="text" class="form-control" id="systemName" required placeholder="Ex: Portal Honda">
+                </div>
+                
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <textarea class="form-control" id="systemDescription" required placeholder="Para que serve este sistema?"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Ícone</label>
+                    <div class="icon-selector" id="iconSelector">
+                        <div class="icon-option" data-icon="📊" title="Relatórios">📊</div>
+                        <div class="icon-option" data-icon="📈" title="Vendas">📈</div>
+                        <div class="icon-option" data-icon="📋" title="Checklist">📋</div>
+                        <div class="icon-option" data-icon="🏍️" title="Motos">🏍️</div>
+                        <div class="icon-option" data-icon="🔧" title="Oficina">🔧</div>
+                        <div class="icon-option" data-icon="⚙️" title="Peças">⚙️</div>
+                        <div class="icon-option" data-icon="🛞" title="Pneus">🛞</div>
+                        <div class="icon-option" data-icon="💰" title="Financeiro">💰</div>
+                        <div class="icon-option" data-icon="💳" title="Pagamentos">💳</div>
+                        <div class="icon-option" data-icon="🏦" title="Banco">🏦</div>
+                        <div class="icon-option" data-icon="🛡️" title="Seguros">🛡️</div>
+                        <div class="icon-option" data-icon="📦" title="Estoque">📦</div>
+                        <div class="icon-option" data-icon="🚚" title="Entrega">🚚</div>
+                        <div class="icon-option" data-icon="🏭" title="Fábrica">🏭</div>
+                        <div class="icon-option" data-icon="👥" title="Clientes">👥</div>
+                        <div class="icon-option" data-icon="📅" title="Agenda">📅</div>
+                        <div class="icon-option" data-icon="📝" title="Contratos">📝</div>
+                        <div class="icon-option" data-icon="📞" title="Contato">📞</div>
+                        <div class="icon-option" data-icon="🏢" title="Filial">🏢</div>
+                        <div class="icon-option" data-icon="🌐" title="Web">🌐</div>
+                    </div>
+                    <input type="hidden" id="selectedIcon">
+                </div>
+
+                <div class="form-group" id="fileInputGroup">
+                    <label>Arquivo HTML</label>
+                    <div class="upload-area" id="uploadArea">
+                        <div style="font-size: 30px; margin-bottom: 10px;">📄</div>
+                        <p>Clique para selecionar o arquivo .html</p>
+                        <input type="file" id="htmlFileInput" accept=".html" style="display: none;">
+                    </div>
+                </div>
+
+                <div class="form-group url-input-container" id="urlInputGroup">
+                    <label>URL do Sistema (https://...)</label>
+                    <input type="url" class="form-control" id="systemUrl" placeholder="https://www.honda.com.br/...">
+                    <p style="font-size:12px; color:#666; margin-top:5px; background: #fffbeb; padding: 8px; border-radius: 6px; border: 1px solid #fcd34d;">⚠️ Sites como Google e Bancos podem bloquear a abertura dentro do Hub. Um botão "Abrir Nova Aba" será criado automaticamente.</p>
                 </div>
 
                 <div class="form-actions">
                     <button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button>
-                    <button type="submit" class="btn-primary" id="submitBtn" disabled>Salvar</button>
+                    <button type="submit" class="btn-primary" id="submitBtn" disabled>Salvar Sistema</button>
                 </div>
             </form>
         </div>
     </div>
 
     <div id="passwordModal" class="modal">
-        <div class="modal-content" style="max-width: 400px;">
-            <h2>🔐 Senha do Admin</h2>
-            <p style="margin-bottom: 15px; color: #666;">Digite a senha para atualizar a nuvem.</p>
-            <input type="password" id="adminPasswordInput" class="form-control" placeholder="Senha...">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div style="font-size: 40px; margin-bottom: 15px;">🔐</div>
+            <h2 style="margin-bottom: 10px;">Senha do Admin</h2>
+            <p style="margin-bottom: 20px; color: #666;">Digite a senha para atualizar o banco de dados global.</p>
+            <input type="password" id="adminPasswordInput" class="form-control" placeholder="Senha..." style="text-align: center; font-size: 18px;">
             <div class="form-actions">
                 <button class="btn-secondary" onclick="closePasswordModal()">Cancelar</button>
                 <button class="btn-primary" onclick="confirmAndUpload()">Confirmar</button>
@@ -182,10 +243,10 @@
         const DB_VERSION = 1;
         const STORE_NAME = 'systems';
         
-        let db; // Variável do IndexedDB
-        let firestoreDB; // Variável do Firestore
+        let db; // IndexedDB
+        let firestoreDB; // Firestore
 
-        // --- 1. INICIALIZAÇÃO DO FIREBASE (MODO COMPATIBILIDADE) ---
+        // --- 1. FIREBASE (COMPATIBILIDADE) ---
         const firebaseConfig = {
             apiKey: "AIzaSyB3Lq5nnCV-2caEhIXqny_S3wjX3DIh-5Q",
             authDomain: "hub-recreio.firebaseapp.com",
@@ -198,13 +259,12 @@
         try {
             firebase.initializeApp(firebaseConfig);
             firestoreDB = firebase.firestore();
-            console.log("Firebase conectado com sucesso!");
+            console.log("Firebase Online");
         } catch (error) {
-            console.error("Erro ao conectar Firebase:", error);
-            alert("Erro de conexão com a Nuvem. Verifique o console.");
+            console.error("Erro Firebase:", error);
         }
 
-        // --- 2. FUNÇÕES DE BANCO DE DADOS LOCAL (INDEXEDDB) ---
+        // --- 2. INDEXEDDB (BANCO LOCAL) ---
         function initDB() {
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -246,80 +306,7 @@
             });
         }
 
-        // --- 3. FUNÇÕES DE NUVEM (USANDO FIRESTORE GLOBAL) ---
-        
-        // Botão "Backup Nuvem"
-        function openSyncModal() {
-            document.getElementById('passwordModal').style.display = 'block';
-            const input = document.getElementById('adminPasswordInput');
-            input.value = '';
-            input.focus();
-            input.onkeypress = (e) => { if(e.key === 'Enter') confirmAndUpload(); };
-        }
-
-        // Enviar para nuvem
-        async function confirmAndUpload() {
-            const input = document.getElementById('adminPasswordInput').value;
-            if (input !== ADMIN_PASSWORD) {
-                alert("Senha incorreta!");
-                return;
-            }
-            
-            closePasswordModal();
-            if(!confirm("Substituir o banco da nuvem pelos dados locais?")) return;
-
-            showNotify("Enviando...", "info");
-            
-            try {
-                const localData = await getAllSystems();
-                if(localData.length === 0) {
-                    showNotify("Nada para enviar.", "error");
-                    return;
-                }
-
-                // Upload em Lote (Batch)
-                const batch = firestoreDB.batch();
-                localData.forEach(sys => {
-                    const ref = firestoreDB.collection('sistemas').doc(sys.id);
-                    batch.set(ref, sys);
-                });
-
-                await batch.commit();
-                showNotify("✓ Nuvem atualizada!", "success");
-            } catch (e) {
-                console.error(e);
-                showNotify("Erro no upload. Veja o console.", "error");
-            }
-        }
-
-        // Baixar da nuvem
-        async function syncDownload() {
-            if(!confirm("Baixar da nuvem? Isso substituirá seus dados locais.")) return;
-            
-            showNotify("Baixando...", "info");
-            try {
-                const snapshot = await firestoreDB.collection('sistemas').get();
-                if (snapshot.empty) {
-                    showNotify("Nuvem vazia.", "error");
-                    return;
-                }
-
-                const cloudData = snapshot.docs.map(doc => doc.data());
-                
-                // Salvar tudo localmente
-                for(const sys of cloudData) {
-                    await saveSystemToDB(sys);
-                }
-                
-                renderSystems();
-                showNotify("✓ Restaurado com sucesso!", "success");
-            } catch (e) {
-                console.error(e);
-                showNotify("Erro no download.", "error");
-            }
-        }
-
-        // --- 4. LÓGICA DE INTERFACE ---
+        // --- 3. LÓGICA DE INTERFACE ---
         let uploadedHtmlContent = '';
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -329,24 +316,48 @@
                 document.getElementById('homeView').style.display = 'block';
                 renderSystems();
             } catch (e) {
-                document.getElementById('loading').innerText = "Erro ao carregar DB.";
+                document.getElementById('loading').innerText = "Erro ao carregar DB Local.";
             }
             initEvents();
         });
 
+        // Alternar entre Arquivo e Link
+        window.switchType = function(type) {
+            document.getElementById('systemType').value = type;
+            document.getElementById('typeFileBtn').className = type === 'file' ? 'type-option active' : 'type-option';
+            document.getElementById('typeLinkBtn').className = type === 'link' ? 'type-option active' : 'type-option';
+            
+            if (type === 'file') {
+                document.getElementById('fileInputGroup').style.display = 'block';
+                document.getElementById('urlInputGroup').style.display = 'none';
+                document.getElementById('systemUrl').required = false;
+            } else {
+                document.getElementById('fileInputGroup').style.display = 'none';
+                document.getElementById('urlInputGroup').style.display = 'block';
+                document.getElementById('systemUrl').required = true;
+            }
+            validateForm();
+        }
+
         async function renderSystems() {
             const systems = await getAllSystems();
             const grid = document.getElementById('systemsGrid');
+            
             grid.innerHTML = systems.map(sys => `
                 <div class="system-card" onclick="loadSystem('${sys.id}')">
+                    ${sys.type === 'link' ? '<div class="badge-online">🌐 Online</div>' : ''}
                     <div class="card-header">
                         <div class="card-icon">${sys.icon}</div>
                         <button class="delete-btn" onclick="event.stopPropagation(); deleteSystem('${sys.id}')">Excluir</button>
                     </div>
                     <h3 class="card-title">${sys.name}</h3>
-                    <p style="color:#666; font-size:0.9em">${sys.description}</p>
+                    <p style="color:#666; font-size:0.9em; line-height:1.4;">${sys.description}</p>
                 </div>
-            `).join('') || '<p style="grid-column:1/-1; text-align:center; color:#999;">Nenhum sistema encontrado.</p>';
+            `).join('') || `
+                <div style="grid-column:1/-1; text-align:center; padding:40px; color:#999; border:2px dashed #eee; border-radius:20px;">
+                    <div style="font-size:40px; margin-bottom:10px;">📂</div>
+                    <p>Nenhum sistema encontrado.</p>
+                </div>`;
         }
 
         async function handleAddSystem(e) {
@@ -354,19 +365,27 @@
             const btn = document.getElementById('submitBtn');
             btn.innerHTML = "Salvando..."; btn.disabled = true;
 
+            const type = document.getElementById('systemType').value;
             const newSystem = {
                 id: 'sys_' + Date.now(),
                 name: document.getElementById('systemName').value,
                 description: document.getElementById('systemDescription').value,
                 icon: document.getElementById('selectedIcon').value,
-                content: uploadedHtmlContent,
+                type: type,
                 date: new Date().toISOString()
             };
 
+            if (type === 'file') {
+                newSystem.content = uploadedHtmlContent;
+            } else {
+                newSystem.url = document.getElementById('systemUrl').value;
+                newSystem.content = null;
+            }
+
             try {
                 await saveSystemToDB(newSystem);
-                // Tenta salvar na nuvem silenciosamente
-                firestoreDB.collection('sistemas').doc(newSystem.id).set(newSystem).catch(e => console.log('Offline: Salvo apenas local'));
+                // Tenta salvar nuvem silencioso
+                if(firestoreDB) firestoreDB.collection('sistemas').doc(newSystem.id).set(newSystem).catch(e => console.log('Offline'));
                 
                 showNotify("Sistema Salvo!");
                 closeModal();
@@ -374,23 +393,121 @@
             } catch (err) {
                 showNotify("Erro ao salvar.", "error");
             } finally {
-                btn.innerHTML = "Salvar"; btn.disabled = false;
+                btn.innerHTML = "Salvar Sistema"; btn.disabled = false;
             }
         }
 
-        async function deleteSystem(id) {
-            if(confirm('Excluir este sistema?')) {
-                await deleteSystemFromDB(id);
-                // Opcional: Deletar da nuvem também
-                firestoreDB.collection('sistemas').doc(id).delete().catch(e => console.log('Erro ao deletar nuvem'));
+        async function loadSystem(id) {
+            const systems = await getAllSystems();
+            const sys = systems.find(s => s.id === id);
+            if (!sys) return;
+
+            // UI Changes
+            document.getElementById('homeView').style.display = 'none';
+            document.getElementById('systemView').style.display = 'block';
+            document.getElementById('backBtn').style.display = 'flex';
+            document.getElementById('addSystemBtn').style.display = 'none';
+            document.querySelectorAll('.backup-btn').forEach(b => b.style.display = 'none');
+
+            let iframeSrc = '';
+            let isExternal = false;
+
+            if (sys.type === 'link') {
+                iframeSrc = sys.url;
+                isExternal = true;
+            } else {
+                const content = sys.content || '<h1>Erro: Conteúdo vazio</h1>';
+                const blob = new Blob([content], { type: 'text/html' });
+                iframeSrc = URL.createObjectURL(blob);
+            }
+
+            const container = document.getElementById('systemContent');
+            container.innerHTML = `
+                <div id="system-container-wrapper" style="height:100%; display:flex; flex-direction:column;">
+                    <div class="system-header-controls" style="padding:10px 0; display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <h2 style="font-size:1.2em; margin:0; display:flex; align-items:center; gap:8px;">${sys.icon} ${sys.name}</h2>
+                            ${isExternal ? `<a href="${sys.url}" target="_blank" class="action-btn" style="text-decoration:none; color:#2563eb; background:#eff6ff; border:1px solid #bfdbfe; font-size:12px;">↗ Abrir Nova Aba</a>` : ''}
+                        </div>
+                        <button id="fs-btn" onclick="toggleFullscreen()" style="padding:8px 16px; border:1px solid #e5e7eb; border-radius:8px; background:white; font-weight:600; color:#374151;">⛶ Tela Cheia</button>
+                    </div>
+                    <iframe id="sys-iframe" src="${iframeSrc}" style="flex:1; width:100%; border:none; background:white; border-radius:16px; box-shadow:0 4px 6px rgba(0,0,0,0.05);" sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-modals"></iframe>
+                </div>`;
+        }
+
+        // --- 4. FUNÇÕES DE NUVEM (COM SENHA) ---
+        window.openSyncModal = function() {
+            document.getElementById('passwordModal').style.display = 'block';
+            const input = document.getElementById('adminPasswordInput');
+            input.value = ''; input.focus();
+            input.onkeypress = (e) => { if(e.key === 'Enter') confirmAndUpload(); };
+        }
+
+        window.confirmAndUpload = async function() {
+            const input = document.getElementById('adminPasswordInput').value;
+            if (input !== ADMIN_PASSWORD) { alert("Senha incorreta!"); return; }
+            
+            closePasswordModal();
+            if(!confirm("Tem certeza? Isso atualizará o banco da nuvem com os dados desta máquina.")) return;
+
+            showNotify("Enviando...", "info");
+            try {
+                const localData = await getAllSystems();
+                if(localData.length === 0) { showNotify("Nada para enviar.", "error"); return; }
+
+                const batch = firestoreDB.batch();
+                localData.forEach(sys => {
+                    const ref = firestoreDB.collection('sistemas').doc(sys.id);
+                    batch.set(ref, sys);
+                });
+                await batch.commit();
+                showNotify("✓ Nuvem atualizada!", "success");
+            } catch (e) {
+                console.error(e);
+                showNotify("Erro no upload.", "error");
+            }
+        }
+
+        window.syncDownload = async function() {
+            if(!confirm("Baixar da nuvem? Isso substituirá seus dados locais.")) return;
+            showNotify("Baixando...", "info");
+            try {
+                const snapshot = await firestoreDB.collection('sistemas').get();
+                if (snapshot.empty) { showNotify("Nuvem vazia.", "error"); return; }
+
+                const cloudData = snapshot.docs.map(doc => doc.data());
+                for(const sys of cloudData) await saveSystemToDB(sys);
+                
                 renderSystems();
-                showNotify("Sistema removido.");
+                showNotify("✓ Restaurado!", "success");
+            } catch (e) {
+                showNotify("Erro no download.", "error");
             }
         }
 
-        // Funções Auxiliares (Modal, Fullscreen, etc)
-        function closeModal() { document.getElementById('addSystemModal').style.display = 'none'; }
-        function closePasswordModal() { document.getElementById('passwordModal').style.display = 'none'; }
+        // --- 5. UTILITÁRIOS ---
+        async function deleteSystem(id) {
+            if(confirm('Excluir sistema?')) {
+                await deleteSystemFromDB(id);
+                if(firestoreDB) firestoreDB.collection('sistemas').doc(id).delete().catch(console.error);
+                renderSystems();
+                showNotify("Removido.");
+            }
+        }
+
+        window.toggleFullscreen = function() {
+            const container = document.getElementById('system-container-wrapper');
+            const btn = document.getElementById('fs-btn');
+            container.classList.toggle('fullscreen-mode');
+            if(container.classList.contains('fullscreen-mode')) {
+                btn.textContent = "✕ Sair"; btn.style.background = "#fee2e2"; btn.style.color = "#dc2626"; btn.style.borderColor = "#fecaca";
+            } else {
+                btn.textContent = "⛶ Tela Cheia"; btn.style.background = "white"; btn.style.color = "#374151"; btn.style.borderColor = "#e5e7eb";
+            }
+        }
+
+        window.closeModal = function() { document.getElementById('addSystemModal').style.display = 'none'; }
+        window.closePasswordModal = function() { document.getElementById('passwordModal').style.display = 'none'; }
         
         function showNotify(msg, type = 'success') {
             const el = document.getElementById('notification');
@@ -399,48 +516,29 @@
             setTimeout(() => el.classList.remove('show'), 3000);
         }
 
-        async function loadSystem(id) {
-            const systems = await getAllSystems();
-            const sys = systems.find(s => s.id === id);
-            if (!sys) return;
-
-            document.getElementById('homeView').style.display = 'none';
-            document.getElementById('systemView').style.display = 'block';
-            document.getElementById('backBtn').style.display = 'flex';
-            document.getElementById('addSystemBtn').style.display = 'none';
-            document.querySelectorAll('.backup-btn').forEach(b => b.style.display = 'none');
-
-            const blob = new Blob([sys.content], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
+        function validateForm() {
+            const name = document.getElementById('systemName').value;
+            const icon = document.getElementById('selectedIcon').value;
+            const type = document.getElementById('systemType').value;
+            let valid = false;
             
-            document.getElementById('systemContent').innerHTML = `
-                <div id="system-container-wrapper" style="height:100%; display:flex; flex-direction:column;">
-                    <div class="system-header-controls" style="padding:10px 0; display:flex; justify-content:space-between; align-items:center;">
-                        <h2 style="font-size:1.2em;">${sys.icon} ${sys.name}</h2>
-                        <button id="fs-btn" onclick="toggleFullscreen()" style="padding:5px 10px; border:1px solid #ccc; border-radius:5px; background:white;">⛶ Tela Cheia</button>
-                    </div>
-                    <iframe id="sys-iframe" src="${url}" style="flex:1; width:100%; border:none; background:white; border-radius:10px;"></iframe>
-                </div>`;
-        }
+            if(type === 'file') valid = (uploadedHtmlContent !== '');
+            else valid = (document.getElementById('systemUrl').value.startsWith('http'));
 
-        function toggleFullscreen() {
-            const container = document.getElementById('system-container-wrapper');
-            const btn = document.getElementById('fs-btn');
-            container.classList.toggle('fullscreen-mode');
-            if(container.classList.contains('fullscreen-mode')) {
-                btn.textContent = "✕ Sair"; btn.style.background = "#fee2e2";
-            } else {
-                btn.textContent = "⛶ Tela Cheia"; btn.style.background = "white";
-            }
+            document.getElementById('submitBtn').disabled = !(name && icon && valid);
         }
 
         function initEvents() {
+            // Modal Adicionar
             document.getElementById('addSystemBtn').onclick = () => {
                 document.getElementById('addSystemModal').style.display = 'block';
                 document.getElementById('addSystemForm').reset();
                 uploadedHtmlContent = '';
                 document.getElementById('uploadArea').classList.remove('has-file');
+                switchType('file'); // Reset para arquivo
             };
+
+            // Voltar
             document.getElementById('backBtn').onclick = () => {
                 const c = document.getElementById('system-container-wrapper');
                 if(c && c.classList.contains('fullscreen-mode')) toggleFullscreen();
@@ -451,40 +549,46 @@
                 document.querySelectorAll('.backup-btn').forEach(b => b.style.display = 'flex');
                 document.getElementById('systemContent').innerHTML = '';
             };
-            document.getElementById('addSystemForm').onsubmit = handleAddSystem;
-            
-            const uploadArea = document.getElementById('uploadArea');
-            const fileInput = document.getElementById('htmlFileInput');
-            uploadArea.onclick = () => fileInput.click();
-            fileInput.onchange = (e) => {
+
+            // Upload Arquivo
+            document.getElementById('uploadArea').onclick = () => document.getElementById('htmlFileInput').click();
+            document.getElementById('htmlFileInput').onchange = (e) => {
                 const file = e.target.files[0];
                 if(file) {
                     const reader = new FileReader();
                     reader.onload = (ev) => {
                         uploadedHtmlContent = ev.target.result;
-                        uploadArea.classList.add('has-file');
-                        document.getElementById('submitBtn').disabled = false;
+                        document.getElementById('uploadArea').classList.add('has-file');
+                        validateForm();
                     };
                     reader.readAsText(file);
                 }
             };
-            
+
+            // Inputs Validation
+            document.getElementById('systemName').oninput = validateForm;
+            document.getElementById('systemUrl').oninput = validateForm;
+            document.getElementById('addSystemForm').onsubmit = handleAddSystem;
+
+            // Ícones
             document.querySelectorAll('.icon-option').forEach(opt => {
                 opt.onclick = () => {
                     document.querySelectorAll('.icon-option').forEach(o => o.classList.remove('selected'));
                     opt.classList.add('selected');
                     document.getElementById('selectedIcon').value = opt.dataset.icon;
+                    validateForm();
                 };
             });
-            
+
+            // Fechar ao clicar fora
             window.onclick = (e) => {
                 if(e.target == document.getElementById('addSystemModal')) closeModal();
                 if(e.target == document.getElementById('passwordModal')) closePasswordModal();
             }
         }
-        
-        // Backup Local (JSON)
-        async function exportData() {
+
+        // Backup Local JSON
+        window.exportData = async function() {
             const data = await getAllSystems();
             const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
             const url = URL.createObjectURL(blob);
@@ -493,7 +597,7 @@
             a.click();
         }
         
-        function importData(input) {
+        window.importData = function(input) {
             const file = input.files[0];
             if(!file) return;
             const reader = new FileReader();
@@ -502,10 +606,11 @@
                     const data = JSON.parse(e.target.result);
                     for(const s of data) await saveSystemToDB(s);
                     renderSystems();
-                    showNotify("Importado com sucesso!");
+                    showNotify("Importado!");
                 } catch(e) { showNotify("Erro no arquivo.", "error"); }
             };
             reader.readAsText(file);
+            input.value = '';
         }
     </script>
 </body>
