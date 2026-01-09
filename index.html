@@ -14,7 +14,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
-        /* --- ESTILOS VISUAIS --- */
+        /* --- ESTILOS VISUAIS (MANTIDOS) --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
@@ -23,14 +23,12 @@
             min-height: 100vh; overflow-x: hidden; position: relative;
         }
 
-        /* Fundo Decorativo */
         body::before {
             content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-image: radial-gradient(circle at 20% 50%, rgba(220, 38, 38, 0.08) 0%, transparent 50%);
             pointer-events: none; z-index: -1;
         }
         
-        /* Navbar */
         .navbar {
             background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(220, 38, 38, 0.15); padding: 15px 40px;
@@ -55,11 +53,9 @@
         .back-btn { background: #dc2626; color: white; padding: 10px 20px; border-radius: 10px; display: none; font-weight: 600; }
         .back-btn:hover { background: #b91c1c; transform: translateY(-2px); }
 
-        /* Layout Principal */
         .main-content { max-width: 1400px; margin: 40px auto; padding: 0 40px; }
         .systems-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; }
         
-        /* Cartões */
         .system-card { background: white; border: 1px solid rgba(220, 38, 38, 0.1); border-radius: 20px; padding: 30px; transition: 0.3s; cursor: pointer; position: relative; overflow: hidden; }
         .system-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(220, 38, 38, 0.1); border-color: rgba(220, 38, 38, 0.3); }
         .card-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
@@ -68,51 +64,42 @@
         .system-card:hover .delete-btn { opacity: 1; }
         .card-title { font-size: 1.3em; font-weight: 700; color: #1f2937; margin-bottom: 8px; }
 
-        /* Badge Online */
         .badge-online { position: absolute; top: 20px; right: 20px; background: #e0f2fe; color: #0284c7; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; display: flex; align-items: center; gap: 4px; border: 1px solid #bae6fd; }
 
-        /* Fullscreen */
         .fullscreen-mode { position: fixed !important; top: 0; left: 0; width: 100vw !important; height: 100vh !important; z-index: 5000; background: #f8f9fa; padding: 0 !important; margin: 0 !important; }
         .fullscreen-mode #sys-iframe { height: 100% !important; border: none !important; border-radius: 0 !important; }
         .fullscreen-mode .system-header-controls { position: absolute; top: 10px; right: 20px; z-index: 5001; background: rgba(255,255,255,0.95); padding: 8px 16px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.1); }
 
-        /* Modais */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); animation: fadeIn 0.2s ease; }
         .modal-content { background: white; margin: 5vh auto; padding: 35px; border-radius: 24px; width: 90%; max-width: 650px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); max-height: 90vh; overflow-y: auto; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Formulario */
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
         .form-control { width: 100%; padding: 14px; border: 2px solid #e5e7eb; border-radius: 12px; font-family: inherit; transition: 0.3s; font-size: 15px; }
         .form-control:focus { border-color: #dc2626; outline: none; }
 
-        /* Seletor de Tipo (Arquivo/Link) */
         .type-selector { display: flex; gap: 10px; margin-bottom: 25px; background: #f3f4f6; padding: 5px; border-radius: 12px; }
         .type-option { flex: 1; text-align: center; padding: 12px; cursor: pointer; border-radius: 10px; font-weight: 600; color: #6b7280; transition: 0.3s; }
         .type-option.active { background: white; color: #dc2626; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 
-        /* Ícones */
         .icon-selector { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; }
         .icon-option { width: 48px; height: 48px; display: flex; justify-content: center; align-items: center; border: 2px solid #f3f4f6; border-radius: 12px; cursor: pointer; font-size: 24px; transition: 0.2s; background: white; }
         .icon-option:hover { transform: scale(1.1); border-color: #fee2e2; }
         .icon-option.selected { border-color: #dc2626; background: #fef2f2; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15); }
 
-        /* Upload */
         .upload-area { border: 2px dashed #e5e7eb; padding: 30px; text-align: center; border-radius: 16px; cursor: pointer; transition: 0.3s; background: #f9fafb; }
         .upload-area:hover { border-color: #dc2626; background: #fef2f2; }
         .upload-area.has-file { border-color: #10b981; background: #ecfdf5; }
         .url-input-container { display: none; }
 
-        /* Botões */
         .form-actions { display: flex; gap: 12px; margin-top: 30px; }
         .btn-primary { flex: 1; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: white; padding: 14px; border-radius: 12px; font-weight: 600; transition: 0.2s; }
-        .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(220, 38, 38, 0.2); }
+        .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 166px rgba(220, 38, 38, 0.2); }
         .btn-primary:disabled { background: #e5e7eb; cursor: not-allowed; transform: none; box-shadow: none; }
         .btn-secondary { flex: 1; background: #f3f4f6; color: #374151; padding: 14px; border-radius: 12px; font-weight: 600; }
         .btn-secondary:hover { background: #e5e7eb; }
 
-        /* Notificação */
         .notification { position: fixed; bottom: 30px; right: 30px; padding: 16px 24px; background: #10b981; color: white; border-radius: 12px; transform: translateY(150px); transition: 0.3s; z-index: 6000; font-weight: 500; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .notification.show { transform: translateY(0); }
         .notification.error { background: #dc2626; }
@@ -246,7 +233,6 @@
         let db; // IndexedDB
         let firestoreDB; // Firestore
 
-        // --- 1. FIREBASE (COMPATIBILIDADE) ---
         const firebaseConfig = {
             apiKey: "AIzaSyB3Lq5nnCV-2caEhIXqny_S3wjX3DIh-5Q",
             authDomain: "hub-recreio.firebaseapp.com",
@@ -264,7 +250,6 @@
             console.error("Erro Firebase:", error);
         }
 
-        // --- 2. INDEXEDDB (BANCO LOCAL) ---
         function initDB() {
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -306,7 +291,6 @@
             });
         }
 
-        // --- 3. LÓGICA DE INTERFACE ---
         let uploadedHtmlContent = '';
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -321,7 +305,6 @@
             initEvents();
         });
 
-        // Alternar entre Arquivo e Link
         window.switchType = function(type) {
             document.getElementById('systemType').value = type;
             document.getElementById('typeFileBtn').className = type === 'file' ? 'type-option active' : 'type-option';
@@ -383,11 +366,10 @@
             }
 
             try {
+                // CORREÇÃO: Salva apenas no banco local (IndexedDB)
                 await saveSystemToDB(newSystem);
-                // Tenta salvar nuvem silencioso
-                if(firestoreDB) firestoreDB.collection('sistemas').doc(newSystem.id).set(newSystem).catch(e => console.log('Offline'));
                 
-                showNotify("Sistema Salvo!");
+                showNotify("Sistema Salvo Localmente!");
                 closeModal();
                 renderSystems();
             } catch (err) {
@@ -402,7 +384,6 @@
             const sys = systems.find(s => s.id === id);
             if (!sys) return;
 
-            // UI Changes
             document.getElementById('homeView').style.display = 'none';
             document.getElementById('systemView').style.display = 'block';
             document.getElementById('backBtn').style.display = 'flex';
@@ -435,7 +416,6 @@
                 </div>`;
         }
 
-        // --- 4. FUNÇÕES DE NUVEM (COM SENHA) ---
         window.openSyncModal = function() {
             document.getElementById('passwordModal').style.display = 'block';
             const input = document.getElementById('adminPasswordInput');
@@ -443,28 +423,39 @@
             input.onkeypress = (e) => { if(e.key === 'Enter') confirmAndUpload(); };
         }
 
+        // CORREÇÃO: Função de Backup agora limpa a nuvem e sincroniza
         window.confirmAndUpload = async function() {
             const input = document.getElementById('adminPasswordInput').value;
             if (input !== ADMIN_PASSWORD) { alert("Senha incorreta!"); return; }
             
             closePasswordModal();
-            if(!confirm("Tem certeza? Isso atualizará o banco da nuvem com os dados desta máquina.")) return;
+            if(!confirm("Atenção: Isso tornará a Nuvem idêntica a esta máquina. Itens que não estão aqui serão removidos da nuvem. Continuar?")) return;
 
-            showNotify("Enviando...", "info");
+            showNotify("Sincronizando nuvem...", "info");
             try {
                 const localData = await getAllSystems();
-                if(localData.length === 0) { showNotify("Nada para enviar.", "error"); return; }
-
+                
+                // 1. Pegar todos os documentos atuais da nuvem
+                const snapshot = await firestoreDB.collection('sistemas').get();
                 const batch = firestoreDB.batch();
+
+                // 2. Adicionar operação para deletar cada documento existente na nuvem
+                snapshot.docs.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+
+                // 3. Adicionar operação para inserir os dados locais
                 localData.forEach(sys => {
                     const ref = firestoreDB.collection('sistemas').doc(sys.id);
                     batch.set(ref, sys);
                 });
+
+                // 4. Executar tudo em um único processo
                 await batch.commit();
-                showNotify("✓ Nuvem atualizada!", "success");
+                showNotify("✓ Nuvem sincronizada com sucesso!", "success");
             } catch (e) {
                 console.error(e);
-                showNotify("Erro no upload.", "error");
+                showNotify("Erro ao sincronizar.", "error");
             }
         }
 
@@ -479,19 +470,18 @@
                 for(const sys of cloudData) await saveSystemToDB(sys);
                 
                 renderSystems();
-                showNotify("✓ Restaurado!", "success");
+                showNotify("✓ Restaurado!");
             } catch (e) {
                 showNotify("Erro no download.", "error");
             }
         }
 
-        // --- 5. UTILITÁRIOS ---
         async function deleteSystem(id) {
-            if(confirm('Excluir sistema?')) {
+            if(confirm('Excluir sistema desta máquina? (Para excluir da nuvem, faça o Backup após esta ação)')) {
+                // CORREÇÃO: Remove apenas localmente
                 await deleteSystemFromDB(id);
-                if(firestoreDB) firestoreDB.collection('sistemas').doc(id).delete().catch(console.error);
                 renderSystems();
-                showNotify("Removido.");
+                showNotify("Removido localmente.");
             }
         }
 
@@ -529,16 +519,14 @@
         }
 
         function initEvents() {
-            // Modal Adicionar
             document.getElementById('addSystemBtn').onclick = () => {
                 document.getElementById('addSystemModal').style.display = 'block';
                 document.getElementById('addSystemForm').reset();
                 uploadedHtmlContent = '';
                 document.getElementById('uploadArea').classList.remove('has-file');
-                switchType('file'); // Reset para arquivo
+                switchType('file');
             };
 
-            // Voltar
             document.getElementById('backBtn').onclick = () => {
                 const c = document.getElementById('system-container-wrapper');
                 if(c && c.classList.contains('fullscreen-mode')) toggleFullscreen();
@@ -550,7 +538,6 @@
                 document.getElementById('systemContent').innerHTML = '';
             };
 
-            // Upload Arquivo
             document.getElementById('uploadArea').onclick = () => document.getElementById('htmlFileInput').click();
             document.getElementById('htmlFileInput').onchange = (e) => {
                 const file = e.target.files[0];
@@ -565,12 +552,10 @@
                 }
             };
 
-            // Inputs Validation
             document.getElementById('systemName').oninput = validateForm;
             document.getElementById('systemUrl').oninput = validateForm;
             document.getElementById('addSystemForm').onsubmit = handleAddSystem;
 
-            // Ícones
             document.querySelectorAll('.icon-option').forEach(opt => {
                 opt.onclick = () => {
                     document.querySelectorAll('.icon-option').forEach(o => o.classList.remove('selected'));
@@ -580,14 +565,12 @@
                 };
             });
 
-            // Fechar ao clicar fora
             window.onclick = (e) => {
                 if(e.target == document.getElementById('addSystemModal')) closeModal();
                 if(e.target == document.getElementById('passwordModal')) closePasswordModal();
             }
         }
 
-        // Backup Local JSON
         window.exportData = async function() {
             const data = await getAllSystems();
             const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
