@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema Integrado Honda - Recreio Motos</title>
-    <link rel="icon" type="image/png" href="https://logodownload.org/wp-content/uploads/2014/04/honda-motos-logo-01.png">
-    <link rel="apple-touch-icon" href="https://logodownload.org/wp-content/uploads/2014/04/honda-motos-logo-01.png">
+    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#dc2626">
 
@@ -170,6 +169,7 @@
                         <div class="icon-option" data-icon="⚙️" title="Peças">⚙️</div>
                         <div class="icon-option" data-icon="🛞" title="Pneus">🛞</div>
                         <div class="icon-option" data-icon="💰" title="Financeiro">💰</div>
+                        <div class="icon-option" data-icon="💳" title="Pagamentos">💳</div>
                         <div class="icon-option" data-icon="🏦" title="Banco">🏦</div>
                         <div class="icon-option" data-icon="🛡️" title="Seguros">🛡️</div>
                         <div class="icon-option" data-icon="📦" title="Estoque">📦</div>
@@ -178,6 +178,7 @@
                         <div class="icon-option" data-icon="👥" title="Clientes">👥</div>
                         <div class="icon-option" data-icon="📅" title="Agenda">📅</div>
                         <div class="icon-option" data-icon="📝" title="Contratos">📝</div>
+                        <div class="icon-option" data-icon="📞" title="Contato">📞</div>
                         <div class="icon-option" data-icon="🏢" title="Filial">🏢</div>
                         <div class="icon-option" data-icon="🌐" title="Web">🌐</div>
                     </div>
@@ -365,7 +366,7 @@
             }
 
             try {
-                // CORREÇÃO: Salva apenas no banco local (IndexedDB)
+                // CORREÇÃO: Salva apenas no banco local (IndexedDB) - Removido save da nuvem
                 await saveSystemToDB(newSystem);
                 
                 showNotify("Sistema Salvo Localmente!");
@@ -402,6 +403,7 @@
             }
 
             const container = document.getElementById('systemContent');
+            // CORREÇÃO: Adicionado allow-downloads ao sandbox
             container.innerHTML = `
                 <div id="system-container-wrapper" style="height:100%; display:flex; flex-direction:column;">
                     <div class="system-header-controls" style="padding:10px 0; display:flex; justify-content:space-between; align-items:center;">
@@ -411,7 +413,7 @@
                         </div>
                         <button id="fs-btn" onclick="toggleFullscreen()" style="padding:8px 16px; border:1px solid #e5e7eb; border-radius:8px; background:white; font-weight:600; color:#374151;">⛶ Tela Cheia</button>
                     </div>
-                    <iframe id="sys-iframe" src="${iframeSrc}" style="flex:1; width:100%; border:none; background:white; border-radius:16px; box-shadow:0 4px 6px rgba(0,0,0,0.05);" sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-modals"></iframe>
+                    <iframe id="sys-iframe" src="${iframeSrc}" style="flex:1; width:100%; border:none; background:white; border-radius:16px; box-shadow:0 4px 6px rgba(0,0,0,0.05);" sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-modals allow-downloads"></iframe>
                 </div>`;
         }
 
