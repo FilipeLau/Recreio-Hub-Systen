@@ -1,4 +1,4 @@
-const CACHE_NAME = 'honda-hub-v4'; // Mudei para v3 para forçar atualização
+const CACHE_NAME = 'honda-hub-v5'; // Mudei para v3 para forçar atualização
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -64,4 +64,5 @@ self.addEventListener('fetch', (event) => {
       })
   );
 });
+
 
