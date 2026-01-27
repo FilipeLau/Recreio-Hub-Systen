@@ -12,9 +12,11 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
     <style>
-        /* --- ESTILOS VISUAIS (MANTIDOS) --- */
+        /* --- ESTILOS VISUAIS --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
@@ -56,11 +58,22 @@
         .main-content { max-width: 1400px; margin: 40px auto; padding: 0 40px; }
         .systems-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; }
         
-        .system-card { background: white; border: 1px solid rgba(220, 38, 38, 0.1); border-radius: 20px; padding: 30px; transition: 0.3s; cursor: pointer; position: relative; overflow: hidden; }
+        /* NOVO: Estilos de Arrastar */
+        .system-card { 
+            background: white; border: 1px solid rgba(220, 38, 38, 0.1); border-radius: 20px; padding: 30px; 
+            transition: transform 0.2s, box-shadow 0.2s; cursor: grab; position: relative; overflow: hidden; 
+            user-select: none; /* Evita selecionar texto ao arrastar */
+        }
+        .system-card:active { cursor: grabbing; }
         .system-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(220, 38, 38, 0.1); border-color: rgba(220, 38, 38, 0.3); }
+        
+        /* Classe adicionada automaticamente pelo SortableJS enquanto arrasta */
+        .sortable-ghost { opacity: 0.4; background: #fef2f2; border: 2px dashed #dc2626; }
+        .sortable-drag { cursor: grabbing; opacity: 1; background: white; transform: scale(1.05); box-shadow: 0 20px 40px rgba(0,0,0,0.2); z-index: 9999; }
+
         .card-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
         .card-icon { font-size: 40px; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.1)); }
-        .delete-btn { background: #fee2e2; color: #dc2626; padding: 6px 12px; border-radius: 8px; font-weight: bold; font-size: 11px; opacity: 0; transition: 0.2s; }
+        .delete-btn { background: #fee2e2; color: #dc2626; padding: 6px 12px; border-radius: 8px; font-weight: bold; font-size: 11px; opacity: 0; transition: 0.2s; cursor: pointer; }
         .system-card:hover .delete-btn { opacity: 1; }
         .card-title { font-size: 1.3em; font-weight: 700; color: #1f2937; margin-bottom: 8px; }
 
@@ -232,6 +245,7 @@
         
         let db; // IndexedDB
         let firestoreDB; // Firestore
+        let sortableInstance; // Instância do Drag and Drop
 
         const firebaseConfig = {
             apiKey: "AIzaSyB3Lq5nnCV-2caEhIXqny_S3wjX3DIh-5Q",
@@ -323,11 +337,15 @@
         }
 
         async function renderSystems() {
-            const systems = await getAllSystems();
+            let systems = await getAllSystems();
+            
+            // NOVO: Ordena os sistemas baseados na propriedade "order"
+            systems.sort((a, b) => (a.order || 0) - (b.order || 0));
+
             const grid = document.getElementById('systemsGrid');
             
             grid.innerHTML = systems.map(sys => `
-                <div class="system-card" onclick="loadSystem('${sys.id}')">
+                <div class="system-card" onclick="loadSystem('${sys.id}')" data-id="${sys.id}">
                     ${sys.type === 'link' ? '<div class="badge-online">🌐 Online</div>' : ''}
                     <div class="card-header">
                         <div class="card-icon">${sys.icon}</div>
@@ -341,6 +359,39 @@
                     <div style="font-size:40px; margin-bottom:10px;">📂</div>
                     <p>Nenhum sistema encontrado.</p>
                 </div>`;
+
+            // NOVO: Inicializa o SortableJS na Grid
+            if (!sortableInstance && systems.length > 0) {
+                sortableInstance = new Sortable(grid, {
+                    animation: 150,
+                    ghostClass: 'sortable-ghost', // Classe visual enquanto arrasta
+                    dragClass: 'sortable-drag',
+                    delay: 150, // Pequeno delay para evitar arrastar ao clicar em touch
+                    delayOnTouchOnly: true,
+                    onEnd: function (evt) {
+                        saveNewOrder(); // Salva a nova ordem ao soltar
+                    }
+                });
+            }
+        }
+
+        // NOVO: Função para salvar a ordem no banco
+        async function saveNewOrder() {
+            const cards = document.querySelectorAll('.system-card');
+            const newOrderIds = Array.from(cards).map(card => card.getAttribute('data-id'));
+            
+            // Busca todos os sistemas, atualiza o campo "order" e salva de volta
+            const allSystems = await getAllSystems();
+            
+            // Atualiza em lote
+            for (let sys of allSystems) {
+                const newIndex = newOrderIds.indexOf(sys.id);
+                if (newIndex !== -1) {
+                    sys.order = newIndex;
+                    await saveSystemToDB(sys); // Salva no IndexedDB
+                }
+            }
+            // Não precisa notificar o usuário, acontece em segundo plano
         }
 
         async function handleAddSystem(e) {
@@ -349,12 +400,15 @@
             btn.innerHTML = "Salvando..."; btn.disabled = true;
 
             const type = document.getElementById('systemType').value;
+            
+            // NOVO: Define a ordem como o fim da lista (timestamp garante que fique no final se não tiver ordem)
             const newSystem = {
                 id: 'sys_' + Date.now(),
                 name: document.getElementById('systemName').value,
                 description: document.getElementById('systemDescription').value,
                 icon: document.getElementById('selectedIcon').value,
                 type: type,
+                order: 99999999, // Vai para o final da lista
                 date: new Date().toISOString()
             };
 
@@ -366,9 +420,7 @@
             }
 
             try {
-                // CORREÇÃO: Salva apenas no banco local (IndexedDB) - Removido save da nuvem
                 await saveSystemToDB(newSystem);
-                
                 showNotify("Sistema Salvo Localmente!");
                 closeModal();
                 renderSystems();
@@ -403,7 +455,6 @@
             }
 
             const container = document.getElementById('systemContent');
-            // CORREÇÃO: Adicionado allow-downloads ao sandbox
             container.innerHTML = `
                 <div id="system-container-wrapper" style="height:100%; display:flex; flex-direction:column;">
                     <div class="system-header-controls" style="padding:10px 0; display:flex; justify-content:space-between; align-items:center;">
@@ -424,7 +475,6 @@
             input.onkeypress = (e) => { if(e.key === 'Enter') confirmAndUpload(); };
         }
 
-        // CORREÇÃO: Função de Backup agora limpa a nuvem e sincroniza
         window.confirmAndUpload = async function() {
             const input = document.getElementById('adminPasswordInput').value;
             if (input !== ADMIN_PASSWORD) { alert("Senha incorreta!"); return; }
@@ -434,24 +484,22 @@
 
             showNotify("Sincronizando nuvem...", "info");
             try {
+                // Antes de subir, garantimos que a ordem visual atual está salva nos objetos
+                await saveNewOrder();
                 const localData = await getAllSystems();
                 
-                // 1. Pegar todos os documentos atuais da nuvem
                 const snapshot = await firestoreDB.collection('sistemas').get();
                 const batch = firestoreDB.batch();
 
-                // 2. Adicionar operação para deletar cada documento existente na nuvem
                 snapshot.docs.forEach(doc => {
                     batch.delete(doc.ref);
                 });
 
-                // 3. Adicionar operação para inserir os dados locais
                 localData.forEach(sys => {
                     const ref = firestoreDB.collection('sistemas').doc(sys.id);
                     batch.set(ref, sys);
                 });
 
-                // 4. Executar tudo em um único processo
                 await batch.commit();
                 showNotify("✓ Nuvem sincronizada com sucesso!", "success");
             } catch (e) {
@@ -479,7 +527,6 @@
 
         async function deleteSystem(id) {
             if(confirm('Excluir sistema desta máquina? (Para excluir da nuvem, faça o Backup após esta ação)')) {
-                // CORREÇÃO: Remove apenas localmente
                 await deleteSystemFromDB(id);
                 renderSystems();
                 showNotify("Removido localmente.");
